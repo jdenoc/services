@@ -1,0 +1,159 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+
+/**
+ * Secrets
+ *
+ * This is an example of a few basic user interaction methods you could use
+ * all done with a hardcoded array.
+ *
+ * @package		CodeIgniter
+ * @subpackage	Rest Server
+ * @category	Controller
+ * @author		Phil Sturgeon
+ * @link		http://philsturgeon.co.uk/code/
+ */
+
+// This can be removed if you use __autoload() in config.php OR use Modular Extensions
+require APPPATH.'/libraries/REST_Controller.php';
+
+class Secrets extends REST_Controller{
+
+    private $_db_config;
+    private $_db_config_file = '/../../config/secrets.db_config.php';
+    private $_origin;
+    private $_model_dir = 'secrets/';
+
+    public function __construct(){
+        parent::__construct();
+        if(!file_exists(__DIR__.$this->_db_config_file)){
+            $this->send_response('DB config file not found', true);
+        } else {
+            $this->_db_config = require_once(__DIR__.$this->_db_config_file);
+        }
+    }
+
+    public function delete_get() {
+        $user_id = $this->get('user');
+        $this->validate_access($user_id);
+
+        $id = $this->get('id');
+        $this->load->model($this->_model_dir.'secrets_model', 'Secrets', $this->_db_config);
+        $this->Secrets->delete($user_id, $id);
+        $this->send_response($this->prepare_response(1, __FUNCTION__));
+    }
+
+    public function display_get() {
+        $user_id = $this->get('user');
+        $this->validate_access($user_id);
+
+        $id = $this->get('id');
+        $this->load->model($this->_model_dir.'secrets_model', 'Secrets', $this->_db_config);
+        $secret = $this->Secrets->get($user_id, $id);
+
+        $this->send_response($this->prepare_response($secret, __FUNCTION__));
+    }
+
+    public function password_get() {
+        $user_id = $this->get('user');
+        $this->validate_access($user_id);
+
+        $id = $this->get('id');
+        $this->load->model($this->_model_dir.'secrets_model', 'Secrets', $this->_db_config);
+        $password_data = $this->Secrets->get_password($user_id, $id);
+        $this->send_response($this->prepare_response($password_data, __FUNCTION__));
+    }
+
+    public function count_get() {
+        $user_id = $this->get('id');
+        $this->validate_access($user_id);
+
+        $this->load->model($this->_model_dir.'secrets_model', 'Secrets', $this->_db_config);
+        $total_secrets = $this->Secrets->count($user_id);
+        $this->send_response($this->prepare_response($total_secrets, __FUNCTION__));
+    }
+
+    public function list_get() {
+        $user_id = $this->get('id');
+        $this->validate_access($user_id);
+
+        $limit = $this->get('limit');
+        $start = $this->get('start');
+        $this->load->model($this->_model_dir.'secrets_model', 'Secrets', $this->_db_config);
+        $records = $this->Secrets->get_names($user_id, $start, $limit);
+
+        $this->send_response($this->prepare_response($records, __FUNCTION__));
+    }
+
+    public function save_post() {
+        $user_id = $this->post('user');
+        $this->validate_access($user_id);
+
+        $secret_data = json_decode(base64_decode($this->post('data')), true);
+        if(empty($secret_data)){
+            $this->send_response(0);
+        }
+        $this->load->model($this->_model_dir.'secrets_model', 'Secrets', $this->_db_config);
+        $this->Secrets->save($user_id, $secret_data);
+        $this->send_response(1);
+    }
+
+    public function user_key_get(){
+        $user_id = $this->get('id');
+        $this->validate_access($user_id);
+        // TODO - get user decryption key
+        $this->send_response($this->prepare_response("This doesn't work yet", __FUNCTION__), true);
+    }
+
+    private function validate_access($user_id){
+        $this->load->model($this->_model_dir.'api_key_model', 'API');
+        $valid_key = $this->API->validate();
+        if(!$valid_key){
+            $this->send_response("Invalid API Key:".$this->API->get_header_key(), true);
+        }
+
+        $this->load->model($this->_model_dir.'user_model', 'User', $this->_db_config);
+        $valid_user = $this->User->validate($user_id);
+        if(!$valid_user){
+            $this->send_response("User does not exist", true);
+        }
+
+        $this->_origin= $this->API->get_key_origin();
+    }
+
+    private function send_response($result, $is_error=false){
+        if($is_error){
+            $code = 400;
+            $error_msg = $result;
+            $result = '';
+        } else {
+            $code = 200;
+            $error_msg = '';
+        }
+        $this->response(array('error'=>$error_msg, 'result'=>$result), $code);
+    }
+
+    private function prepare_response($data, $function){
+        $processed_data = null;
+        if($this->_origin == 'web'){
+            $this->load->model($this->_model_dir.'Web_model');
+            switch($function){
+                case 'list_get':
+                    $processed_data = $this->Web_model->web_list($data);
+                    break;
+                case 'display_get':
+                    $processed_data = $this->Web_model->web_display($data);
+                    break;
+                case 'user_key_get':
+                    $processed_data = base64_encode($data);
+                    break;
+                default:
+                    $processed_data = $data;
+            }
+        } else {
+            // TODO - load app model
+        }
+
+        return $processed_data;
+    }
+
+}
