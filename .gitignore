@@ -1,0 +1,22 @@
+# Created by .gitignore support plugin (hsz.mobi)
+
+### CodeIgniter template
+*/config/development
+*/logs/log-*.php
+*/logs/!index.html
+*/cache/*
+*/cache/!index.html
+*/cache/!.htaccess
+
+### PhpStorm
+.idea
+
+###Windows
+*.ini
+
+### Mac
+.DS_Store
+
+### Extra
+application/config/*.db_config.php
+!application/config/example.db_config.php
