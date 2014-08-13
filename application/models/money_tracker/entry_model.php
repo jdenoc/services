@@ -18,12 +18,12 @@ class Entry_model extends CI_Model {
         // UPDATE entries SET deleted=1 WHERE id=$id
         $this->db->where(array('id'=>$id))->update($this->tbl_name, array('deleted'=>1));
         $this->db->flush_cache();
-        // SELECT e.`value` AS `value`, e.expense AS expense, at.account_group AS id FROM entries AS e INNER JOIN account_types AS at ON at.id=e.account_type WHERE e.id=$id AND e.deleted=1
-        $this->db->select("e.`value`, e.expense AS , account_types.account_group AS id")->from($this->tbl_name.' AS e')->where(array('e.deleted'=>1, 'e.id'=>$id))->join("account_types AS at", "at.id=e.account_type", "inner");
+        // SELECT `value`, expense FROM entries WHERE id=$id AND deleted=1
+        $this->db->select("`value`, expense")->from($this->tbl_name)->where(array('e.deleted'=>1, 'e.id'=>$id));
         $entry_data = $this->db->get()->row_array();
         $entry_data['value'] *= ($entry_data['expense'] ? -1 : 1);
         unset($entry_data['expense']);
-        return $entry_data;
+        return $entry_data['value'];
     }
 
     public function save($data) {
@@ -40,43 +40,43 @@ class Entry_model extends CI_Model {
         }
     }
 
-    private function insert($secret_data) {
-        // TODO - rebuild
-//        $this->db->insert('secrets', array(
-//            'name'=>$secret_data['name'],
-//            'url'=>$secret_data['url'],
-//            'username'=>$secret_data['username'],
-//            'encrypted_password'=>$secret_data['encrypted_password'],
-//            'password_length'=>$secret_data['password_length'],
-//            'notes'=>$secret_data['notes'],
-//            'create_stamp'=>'NOW()'
-//        ));
+    private function insert($entry_data) {
+        // TODO - test
+        $this->db->insert($this->tbl_name, array(
+            'date'=>$entry_data['date'],
+            'account_type'=>$entry_data['account_type'],
+            'value'=>$entry_data['value'],
+            'tags'=>$entry_data['tags'],
+            'memo'=>$entry_data['memo'],
+            'confirm'=>$entry_data['confirm'],
+            'expense'=>$entry_data['expense']
+        ));
+        return $this->db->insert_id();
     }
 
-    private function update($secret_data) {
-        // TODO - rebuild
-//        $data = array();
-//        foreach($secret_data as $key=>$value){
-//            if(!empty($value) && $key!='id'){
-//                $data[$key] = $value;
-//            }
-//        }
+    private function update($entry_data) {
+        // TODO - test
+        $data = array();
+        foreach($entry_data as $key=>$value){
+            if(!empty($value) && $key!='id'){
+                $data[$key] = $value;
+            }
+        }
 
-//        $this->db->where(array('id'=>$secret_data['id']))->update('secrets',$data);
+        $this->db->where(array('id'=>$entry_data['id']))->update($this->tbl_name,$data);
+        return $entry_data['id'];
     }
 
     public function list_entries($where_array, $start, $limit){
-        // TODO - test
         // SELECT entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits
-        // FROM entries AS e
-        // INNER JOIN account_types AS at ON at.id = e.account_type $where
-        // ORDER BY e.`date` DESC, entries.id DESC LIMIT ($start*$limit), $limit
-        $this->db->select("e.*, at.type_name AS account_type_name, at.last_digits AS account_last_digits")->from($this->tbl_name." AS e")->join('account_types AS at', "at.id=e.account_type")->where($where_array)->order_by('e.date', 'DESC')->limit($limit, $start*$limit);
+        // FROM entries
+        // INNER JOIN account_types ON account_types.id = entries.account_type $where
+        // ORDER BY entries.`date` DESC, entries.id DESC LIMIT ($start*$limit), $limit
+        $this->db->select("entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits")->from($this->tbl_name)->join('account_types', "account_types.id=entries.account_type")->where($where_array)->order_by('entries.date', 'DESC')->limit($limit, $start*$limit);
         return $this->db->get()->result_array();
     }
 
     public function count($where){
-        // TODO - test
         // SELECT COUNT(*) FROM entries INNER JOIN account_types ON account_types.id = entries.account_type WHERE $where
         $this->db->from($this->tbl_name)->join('account_types', 'account_types.id = entries.account_type', 'inner')->where($where);
         return $this->db->count_all_results();
