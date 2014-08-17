@@ -39,12 +39,14 @@ class Secrets_model extends CI_Model {
     private function update($user_id, $secret_data) {
         $data = array();
         foreach($secret_data as $key=>$value){
-            if(!empty($value) && $key!='id'){
+            if($key!='id'){
                 $data[$key] = $value;
             }
         }
 
-        $this->db->where(array('id'=>$secret_data['id'], 'user_id'=>$user_id))->update('secrets',$data);
+        if(!empty($data)){
+            $this->db->where(array('id'=>$secret_data['id'], 'user_id'=>$user_id))->update('secrets',$data);
+        }
     }
 
     public function get_password($user_id, $id) {
