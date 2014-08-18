@@ -63,7 +63,7 @@ class Money_Tracker extends REST_Controller{
         }
         if($entry['has_attachment']){
             $this->load->model($this->_model_dir.'attachment_model', 'Attachment', $this->_db_config);
-            $attachments = $this->Attachment->get_entry();
+            $attachments = $this->Attachment->get_entry($id);
             if(empty($attachments)){
                 $entry['has_attachment']=0;
                 $entry['attachments'] = array();
@@ -99,7 +99,6 @@ class Money_Tracker extends REST_Controller{
     }
 
     public function list_accounts_get(){
-        // TODO - test
         $this->validate_access();
 
         $this->load->model($this->_model_dir.'account_model', 'Account', $this->_db_config);
@@ -108,7 +107,6 @@ class Money_Tracker extends REST_Controller{
     }
 
     public function save_post() {
-        // TODO - test
         $this->validate_access();
 
         $entry_data = json_decode(base64_decode($this->post('data')), true);
@@ -126,7 +124,7 @@ class Money_Tracker extends REST_Controller{
             if(!empty($existing_entry_data)){
                 $existing_entry_data['value'] *= ($existing_entry_data['expense'] ? -1 : 1);
                 $account_id = $this->Account->get_account_id_from_entry($existing_entry_data['id']);
-                $this->Account->update_balance(-1*$entry_data['value'], $account_id);
+                $this->Account->update_balance((-1*$existing_entry_data['value']), $account_id);
             }
         }
 
@@ -138,12 +136,6 @@ class Money_Tracker extends REST_Controller{
         }
         $this->Account->update_balance($entry_data['value'], $account_id);
         $this->send_response(1, __FUNCTION__);
-    }
-
-    public function user_key_get(){
-        // TODO - rebuild / decided if I actually need this
-        // TODO - get user decryption key
-        $this->send_response("This doesn't work yet");
     }
 
     public function tags_get(){
