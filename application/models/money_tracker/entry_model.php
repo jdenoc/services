@@ -14,12 +14,11 @@ class Entry_model extends CI_Model {
     }
 
     public function delete($id) {
-        // TODO - test
         // UPDATE entries SET deleted=1 WHERE id=$id
         $this->db->where(array('id'=>$id))->update($this->tbl_name, array('deleted'=>1));
         $this->db->flush_cache();
         // SELECT `value`, expense FROM entries WHERE id=$id AND deleted=1
-        $this->db->select("`value`, expense")->from($this->tbl_name)->where(array('e.deleted'=>1, 'e.id'=>$id));
+        $this->db->select("`value`, expense")->from($this->tbl_name)->where(array('deleted'=>1, 'id'=>$id));
         $entry_data = $this->db->get()->row_array();
         $entry_data['value'] *= ($entry_data['expense'] ? -1 : 1);
         unset($entry_data['expense']);
@@ -27,16 +26,16 @@ class Entry_model extends CI_Model {
     }
 
     public function save($data) {
-        // TODO - finish
         $tags = implode("','", $data['tags']);
+        // SELECT id FROM tags WHERE tag IN ($tags)
         $this->db->select("id")->from('tags')->where_in('tag', $tags);
         $tag_ids = $this->db->get()->result_array();
         $data['tags'] = (empty($tag_ids)) ? '' : json_encode($tag_ids);
 
         if(empty($data['id']) || $data['id']==-1){
-            $this->insert($data);
+            return $this->insert($data);
         } else {
-            $this->update($data);
+            return $this->update($data);
         }
     }
 
@@ -58,12 +57,14 @@ class Entry_model extends CI_Model {
         // TODO - test
         $data = array();
         foreach($entry_data as $key=>$value){
-            if(!empty($value) && $key!='id'){
+            if(!in_array($key, array('id', 'attachments', 'has_attachment'))){
                 $data[$key] = $value;
             }
         }
 
-        $this->db->where(array('id'=>$entry_data['id']))->update($this->tbl_name,$data);
+        if(!empty($data)){
+            $this->db->where(array('id'=>$entry_data['id']))->update($this->tbl_name,$data);
+        }
         return $entry_data['id'];
     }
 
@@ -98,9 +99,10 @@ class Entry_model extends CI_Model {
     }
 
     public function get($id){
-        // TODO - test
         // SELECT e.*, at.type_name AS account_type_name, at.last_digits AS account_last_digits
-        // FROM entries AS e WHERE id=$id
+        // FROM entries AS e
+        // INNER JOIN account_types AS at ON at.id=e.account_type
+        // WHERE e.id=$id
         $this->db->select("e.*, at.type_name AS account_type_name, at.last_digits AS account_last_digits")->from($this->tbl_name." AS e")->join("account_types AS at", "at.id=e.account_type", 'inner')->where(array("e.id"=>$id));
         return $this->db->get()->row_array();
     }
