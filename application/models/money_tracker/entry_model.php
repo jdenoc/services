@@ -6,7 +6,7 @@
 
 class Entry_model extends CI_Model {
 
-    private $tbl_name = 'entries';
+    private $_tbl_name = 'entries';
 
     public function __construct() {
         // Call the Model constructor
@@ -15,10 +15,10 @@ class Entry_model extends CI_Model {
 
     public function delete($id) {
         // UPDATE entries SET deleted=1 WHERE id=$id
-        $this->db->where(array('id'=>$id))->update($this->tbl_name, array('deleted'=>1));
+        $this->db->where(array('id'=>$id))->update($this->_tbl_name, array('deleted'=>1));
         $this->db->flush_cache();
         // SELECT `value`, expense FROM entries WHERE id=$id AND deleted=1
-        $this->db->select("`value`, expense")->from($this->tbl_name)->where(array('deleted'=>1, 'id'=>$id));
+        $this->db->select("`value`, expense")->from($this->_tbl_name)->where(array('deleted'=>1, 'id'=>$id));
         $entry_data = $this->db->get()->row_array();
         $entry_data['value'] *= ($entry_data['expense'] ? -1 : 1);
         unset($entry_data['expense']);
@@ -41,7 +41,7 @@ class Entry_model extends CI_Model {
 
     private function insert($entry_data) {
         // TODO - test
-        $this->db->insert($this->tbl_name, array(
+        $this->db->insert($this->_tbl_name, array(
             'date'=>$entry_data['date'],
             'account_type'=>$entry_data['account_type'],
             'value'=>$entry_data['value'],
@@ -63,7 +63,7 @@ class Entry_model extends CI_Model {
         }
 
         if(!empty($data)){
-            $this->db->where(array('id'=>$entry_data['id']))->update($this->tbl_name,$data);
+            $this->db->where(array('id'=>$entry_data['id']))->update($this->_tbl_name,$data);
         }
         return $entry_data['id'];
     }
@@ -73,13 +73,13 @@ class Entry_model extends CI_Model {
         // FROM entries
         // INNER JOIN account_types ON account_types.id = entries.account_type $where
         // ORDER BY entries.`date` DESC, entries.id DESC LIMIT ($start*$limit), $limit
-        $this->db->select("entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits")->from($this->tbl_name)->join('account_types', "account_types.id=entries.account_type")->where($where_array)->order_by('entries.date', 'DESC')->limit($limit, $start*$limit);
+        $this->db->select("entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits")->from($this->_tbl_name)->join('account_types', "account_types.id=entries.account_type")->where($where_array)->order_by('entries.date', 'DESC')->limit($limit, $start*$limit);
         return $this->db->get()->result_array();
     }
 
     public function count($where){
         // SELECT COUNT(*) FROM entries INNER JOIN account_types ON account_types.id = entries.account_type WHERE $where
-        $this->db->from($this->tbl_name)->join('account_types', 'account_types.id = entries.account_type', 'inner')->where($where);
+        $this->db->from($this->_tbl_name)->join('account_types', 'account_types.id = entries.account_type', 'inner')->where($where);
         return $this->db->count_all_results();
     }
 
@@ -103,7 +103,7 @@ class Entry_model extends CI_Model {
         // FROM entries AS e
         // INNER JOIN account_types AS at ON at.id=e.account_type
         // WHERE e.id=$id
-        $this->db->select("e.*, at.type_name AS account_type_name, at.last_digits AS account_last_digits")->from($this->tbl_name." AS e")->join("account_types AS at", "at.id=e.account_type", 'inner')->where(array("e.id"=>$id));
+        $this->db->select("e.*, at.type_name AS account_type_name, at.last_digits AS account_last_digits")->from($this->_tbl_name." AS e")->join("account_types AS at", "at.id=e.account_type", 'inner')->where(array("e.id"=>$id));
         return $this->db->get()->row_array();
     }
 }
