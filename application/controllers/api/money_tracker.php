@@ -154,11 +154,15 @@ class Money_Tracker extends REST_Controller{
         $return_account_data = array();
         foreach($account_data as $acd){
             $return_account_data[$acd['id']]['account_name'] = $acd['account_name'];
-            $return_account_data[$acd['id']]['type'][] = array(
-                'type_id'=>$acd['type_id'],
-                'type_name'=>$acd['type_name'],
-                'last_digits'=>$acd['last_digits']
-            );
+            if(!is_null($acd['type_id'])){
+                $return_account_data[$acd['id']]['type'][] = array(
+                    'type_id'=>$acd['type_id'],
+                    'type_name'=>$acd['type_name'],
+                    'last_digits'=>$acd['last_digits']
+                );
+            } else {
+                $return_account_data[$acd['id']]['type'] = array();
+            }
         }
         $this->send_response($return_account_data, __FUNCTION__);
     }
