@@ -145,7 +145,28 @@ class Money_Tracker extends REST_Controller{
         $tags = $this->Entry->get_all_tags();
         $this->send_response($tags, __FUNCTION__);
     }
-
+    
+    public function add_account_post(){
+        // TODO - take in a user
+        // TODO - take in a base64 encoding of a JSON string;
+        // TODO -       containing: account name
+        // TODO - pass info to account_model::create();
+    }
+    
+    public function close_account_get(){
+        // TODO - take in account ID.
+        // TODO - pass info to account_model::disable();
+    }
+    
+    public function save_account_type_post(){
+        // Handles account type creation, updates and disables
+        // TODO - take in a user
+        // TODO - take in an account ID
+        // TODO - take in a base64 encoding of a JSON string;
+        // TODO -       containing: account type, account type name, last 4 digits associated, id (optional)
+        // TODO - pass info to account_model::save_type();
+    }
+    
     private function validate_access(){
         // TODO - finish...??
         $this->load->model($this->_model_dir.'api_key_model', 'API');
@@ -153,12 +174,6 @@ class Money_Tracker extends REST_Controller{
         if(!$valid_key){
             $this->send_response("Invalid API Key:".$this->API->get_header_key());
         }
-
-//        $this->load->model('secrets/user_model', 'User', $this->_db_config);
-//        $valid_user = $this->User->validate($user_id);
-//        if(!$valid_user){
-//            $this->send_response("User does not exist", true);
-//        }
 
         $this->_origin= $this->API->get_key_origin();
     }
