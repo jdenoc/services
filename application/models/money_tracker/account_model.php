@@ -13,7 +13,7 @@ class Account_model extends CI_Model {
         parent::__construct();
     }
 
-    public function create($data){
+    public function create($data) {
         // TODO - build
     }
 
@@ -54,6 +54,15 @@ class Account_model extends CI_Model {
     public function list_accounts(){
         // SELECT * FROM accounts
         return $this->db->from($this->_tbl_name)->get()->result_array();
+    }
+
+    public function get_all(){
+        // SELECT a.id, a.account As account_name, at.id AS type_id, at.type_name, at.last_digits
+        // FROM `accounts` AS a
+        // LEFT JOIN `account_types` AS at ON at.account_group = a.id
+        // ORDER BY a.account
+        $this->db->select("a.id, a.account As account_name, at.id AS type_id, at.type_name, at.last_digits")->from($this->_tbl_name." AS a")->join("account_types AS at", "a.id=at.account_group", "left")->order_by('account_name');
+        return $this->db->get()->result_array();
     }
 
     public function get_account_id_from_entry($entry_id){

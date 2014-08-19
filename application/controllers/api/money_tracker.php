@@ -145,6 +145,23 @@ class Money_Tracker extends REST_Controller{
         $tags = $this->Entry->get_all_tags();
         $this->send_response($tags, __FUNCTION__);
     }
+
+    public function account_details_get(){
+        $this->validate_access();
+
+        $this->load->model($this->_model_dir.'account_model', 'Account', $this->_db_config);
+        $account_data = $this->Account->get_all();
+        $return_account_data = array();
+        foreach($account_data as $acd){
+            $return_account_data[$acd['id']]['account_name'] = $acd['account_name'];
+            $return_account_data[$acd['id']]['type'][] = array(
+                'type_id'=>$acd['type_id'],
+                'type_name'=>$acd['type_name'],
+                'last_digits'=>$acd['last_digits']
+            );
+        }
+        $this->send_response($return_account_data, __FUNCTION__);
+    }
     
     public function add_account_post(){
         // TODO - take in a user
@@ -168,7 +185,6 @@ class Money_Tracker extends REST_Controller{
     }
     
     private function validate_access(){
-        // TODO - finish...??
         $this->load->model($this->_model_dir.'api_key_model', 'API');
         $valid_key = $this->API->validate();
         if(!$valid_key){
@@ -187,6 +203,7 @@ class Money_Tracker extends REST_Controller{
                 case 'entry_get':
                 case 'tags_get':
                 case 'list_post':
+                case 'account_details_get':
                     $result = base64_encode(json_encode($data));
                     break;
                 default:
