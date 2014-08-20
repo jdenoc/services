@@ -15,7 +15,7 @@
 
 // This can be removed if you use __autoload() in config.php OR use Modular Extensions
 require APPPATH.'/libraries/REST_Controller.php';
-
+error_reporting(!E_DEPRECATED);
 class Money_Tracker extends REST_Controller{
 
     private $_db_config;
@@ -151,7 +151,9 @@ class Money_Tracker extends REST_Controller{
 
         $this->load->model($this->_model_dir.'account_model', 'Account', $this->_db_config);
         $account_data = $this->Account->get_all();
-        $return_account_data = array();
+        $return_account_data = array(
+            'types'=>$this->Account->get_account_types()
+        );
         foreach($account_data as $acd){
             $return_account_data[$acd['id']]['account_name'] = $acd['account_name'];
             if(!is_null($acd['type_id'])){
