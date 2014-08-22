@@ -57,7 +57,7 @@ class Account_model extends CI_Model {
     }
 
     public function get_all(){
-        // SELECT a.id, a.account As account_name, at.id AS type_id, at.type_name, at.last_digits
+        // SELECT a.id, a.account As account_name, at.id AS type_id, at.type_name, at.type, at.last_digits
         // FROM `accounts` AS a
         // LEFT JOIN `account_types` AS at ON at.account_group = a.id
         // ORDER BY a.account
