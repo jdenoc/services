@@ -160,6 +160,7 @@ class Money_Tracker extends REST_Controller{
                 $return_account_data[$acd['id']]['type'][] = array(
                     'type_id'=>$acd['type_id'],
                     'type_name'=>$acd['type_name'],
+                    'type'=>$acd['type'],
                     'last_digits'=>$acd['last_digits']
                 );
             } else {
