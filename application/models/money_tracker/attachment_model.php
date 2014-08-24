@@ -13,6 +13,10 @@ class Attachment_model extends CI_Model {
         parent::__construct();
     }
 
+    /**
+     * @param int $entry_id
+     * @param int|bool $id
+     */
     public function delete($entry_id, $id=false) {
         // TODO - test
         $where_array = array('entry_id'=>$entry_id);
@@ -28,6 +32,10 @@ class Attachment_model extends CI_Model {
         }
     }
 
+    /**
+     * @param int $entry_id
+     * @param array $attachments
+     */
     public function save($entry_id, $attachments) {
         // TODO - rebuild
         $new_attachments = array();
@@ -48,6 +56,10 @@ class Attachment_model extends CI_Model {
         }
     }
 
+    /**
+     * @param int $entry_id
+     * @return array
+     */
     public function get_entry($entry_id){
         // TODO - test
         // SELECT id, attachment AS filename FROM attachments WHERE entry_id=$entry_id
@@ -55,17 +67,17 @@ class Attachment_model extends CI_Model {
         return $this->db->get()->result_array();
     }
 
+    /**
+     * @param int $entry_id
+     * @return int
+     */
     public function count($entry_id){
-        // TODO - test
         // SELECT COUNT(*) FROM attachments WHERE entry_id=$entry_id
         return $this->db->from($this->_tbl_name)->where(array('entry_id'=>$entry_id))->count_all_results();
     }
 
     public function get($user_id, $id){
         // TODO - rebuild
-        // SELECT * FROM secrets WHERE user_id=$user_id AND id=$id
-//        $this->db->from('secrets')->where(array('user_id'=>$user_id, 'id'=>$id));
-//        return $this->db->get()->row_array();
     }
 
 }

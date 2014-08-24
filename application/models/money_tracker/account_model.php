@@ -13,14 +13,24 @@ class Account_model extends CI_Model {
         parent::__construct();
     }
 
+    /**
+     * @param array $data
+     */
     public function create($data) {
         // TODO - build
     }
 
+    /**
+     * @param int $id
+     */
     public function disable($id) {
         // TODO - build
     }
 
+    /**
+     * @param array $data
+     * @return int
+     */
     public function save_type($data) {
         if(empty($data['id']) || $data['id']==-1){
             return $this->insert_type($data);
@@ -39,6 +49,10 @@ class Account_model extends CI_Model {
         return null;
     }
 
+    /**
+     * @param double $update_value
+     * @param int $account_id
+     */
     public function update_balance($update_value, $account_id){
         $this->db->query("LOCK TABLE accounts WRITE");
         $this->db->flush_cache();
@@ -51,11 +65,17 @@ class Account_model extends CI_Model {
         $this->db->query("UNLOCK TABLES");
     }
 
+    /**
+     * @return array
+     */
     public function list_accounts(){
         // SELECT * FROM accounts
         return $this->db->from($this->_tbl_name)->get()->result_array();
     }
 
+    /**
+     * @return array
+     */
     public function get_all(){
         // SELECT a.id, a.account As account_name, at.id AS type_id, at.type_name, at.type, at.last_digits
         // FROM `accounts` AS a
@@ -64,7 +84,10 @@ class Account_model extends CI_Model {
         $this->db->select("a.id, a.account As account_name, at.id AS type_id, at.type_name, at.type, at.last_digits")->from($this->_tbl_name." AS a")->join("account_types AS at", "a.id=at.account_group", "left")->order_by('account_name');
         return $this->db->get()->result_array();
     }
-    
+
+    /**
+     * @return array
+     */
     public function get_account_types(){
         $type = 'enum';
         $col_details = $this->db->query("SHOW COLUMNS FROM account_types WHERE Field='type'")->row_array();
@@ -73,6 +96,10 @@ class Account_model extends CI_Model {
         return $field_values;
     }
 
+    /**
+     * @param int $entry_id
+     * @return int
+     */
     public function get_account_id_from_entry($entry_id){
         // SELECT at.account_group AS id FROM entries AS e INNER JOIN account_types AS at ON at.id=e.account_type WHERE e.id=$id
         $this->db->select("at.account_group AS id")->from('entries AS e')->where(array('e.id'=>$entry_id))->join("account_types AS at", "at.id=e.account_type", "inner");

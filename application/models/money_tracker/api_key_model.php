@@ -13,16 +13,25 @@ class Api_key_model extends CI_Model implements api_key_interface{
         parent::__construct();
     }
 
+    /**
+     * @return bool
+     */
     public function validate(){
         $client = $this->get_header_key();
         $server = $this->get_service_keys();
         return in_array($client, $server);
     }
 
+    /**
+     * @return string
+     */
     public function get_header_key(){
         return $this->input->get_request_header('Authorization');
     }
 
+    /**
+     * @return array
+     */
     public function get_service_keys(){
         // TODO - get API from local config file or DB
         return array(
@@ -31,6 +40,9 @@ class Api_key_model extends CI_Model implements api_key_interface{
         );
     }
 
+    /**
+     * @return string
+     */
     public function get_key_origin(){
         return array_search(
             $this->get_header_key(),
