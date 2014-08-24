@@ -73,7 +73,7 @@ class Money_Tracker extends REST_Controller{
         }
 
         $tag_ids = json_decode($entry['tags'], true);
-        $entry['tags'] = $this->Entry->get_select_tags($tag_ids);
+        $entry['tags'] = $this->Entry->get_select_tags('id', $tag_ids);
         $this->send_response($entry, __FUNCTION__);
     }
 

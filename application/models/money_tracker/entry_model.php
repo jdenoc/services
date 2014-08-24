@@ -26,11 +26,13 @@ class Entry_model extends CI_Model {
     }
 
     public function save($data) {
-        $tags = implode("','", $data['tags']);
-        // SELECT id FROM tags WHERE tag IN ($tags)
-        $this->db->select("id")->from('tags')->where_in('tag', $tags);
-        $tag_ids = $this->db->get()->result_array();
+        $raw_tag_ids = $this->get_select_tags('tag', $data['tags']);
+        $tag_ids = array();
+        foreach($raw_tag_ids as $tid){
+            $tag_ids[] = $tid['id'];
+        }
         $data['tags'] = (empty($tag_ids)) ? '' : json_encode($tag_ids);
+        unset($raw_tag_ids, $tag_ids);
 
         if(empty($data['id']) || $data['id']==-1){
             return $this->insert($data);
@@ -40,7 +42,6 @@ class Entry_model extends CI_Model {
     }
 
     private function insert($entry_data) {
-        // TODO - test
         $this->db->insert($this->_tbl_name, array(
             'date'=>$entry_data['date'],
             'account_type'=>$entry_data['account_type'],
@@ -88,11 +89,10 @@ class Entry_model extends CI_Model {
         return $this->db->from("tags")->get()->result_array();
     }
 
-    public function get_select_tags($tag_ids){
-        // TODO - test
-        if(!empty($tag_ids)){
-            // SELECT * FROM tags WHERE id IN ($tag_ids);
-            return $this->db->from('tags')->where_in(array('id'=>$tag_ids))->get()->result_array();
+    public function get_select_tags($col, $tag_values){
+        if(!empty($tag_values)){
+            // SELECT * FROM tags WHERE $col IN ($tag_values);
+            return $this->db->from('tags')->where_in($col, $tag_values)->get()->result_array();
         } else {
             return array();
         }
