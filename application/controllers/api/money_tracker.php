@@ -119,7 +119,7 @@ class Money_Tracker extends REST_Controller{
         $this->load->model($this->_model_dir.'account_model', 'Account', $this->_db_config);
 
         $account_id = null;
-        if(!empty($entry_data['id']) || $entry_data['id'] != -1){
+        if(!empty($entry_data['id']) && $entry_data['id'] != -1){
             $existing_entry_data = $this->Entry->get($entry_data['id']);
             if(!empty($existing_entry_data)){
                 $existing_entry_data['value'] *= ($existing_entry_data['expense'] ? -1 : 1);
