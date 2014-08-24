@@ -80,7 +80,7 @@ class Money_Tracker extends REST_Controller{
     public function count_post() {
         $this->validate_access();
 
-        $where_array = $this->process_where_array(json_decode(base64_decode($this->post('where'))), true);
+        $where_array = $this->process_where_array(json_decode(base64_decode($this->post('where')), true));
         $this->load->model($this->_model_dir.'entry_model', 'Entry', $this->_db_config);
         $total_entries = $this->Entry->count($where_array);
         $this->send_response($total_entries, __FUNCTION__);
