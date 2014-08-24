@@ -77,6 +77,6 @@ class Account_model extends CI_Model {
         // SELECT at.account_group AS id FROM entries AS e INNER JOIN account_types AS at ON at.id=e.account_type WHERE e.id=$id
         $this->db->select("at.account_group AS id")->from('entries AS e')->where(array('e.id'=>$entry_id))->join("account_types AS at", "at.id=e.account_type", "inner");
         $account = $this->db->get()->row_array();
-        return $account['id'];
+        return intval($account['id']);
     }
 }
