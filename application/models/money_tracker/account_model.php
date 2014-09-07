@@ -44,7 +44,7 @@ class Account_model extends CI_Model {
      */
     private function insert_type($type_data) {
         $this->db->insert('account_types', array(
-            'type_name'=>$type_data['name'],
+            'type_name'=>$type_data['type_name'],
             'type'=>$type_data['type'],
             'last_digits'=>$type_data['last_digits'],
             'account_group'=>$type_data['accountID']
