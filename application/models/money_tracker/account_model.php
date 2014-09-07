@@ -115,12 +115,25 @@ class Account_model extends CI_Model {
     }
 
     /**
-     * @param int $entry_id
+     * @param string $from
+     * @param int $id
      * @return int
      */
-    public function get_account_id_from_entry($entry_id){
-        // SELECT at.account_group AS id FROM entries AS e INNER JOIN account_types AS at ON at.id=e.account_type WHERE e.id=$id
-        $this->db->select("at.account_group AS id")->from('entries AS e')->where(array('e.id'=>$entry_id))->join("account_types AS at", "at.id=e.account_type", "inner");
+    public function get_account_id($from, $id){
+        switch($from){
+            case 'entry':
+                // SELECT at.account_group AS id FROM entries AS e INNER JOIN account_types AS at ON at.id=e.account_type WHERE e.id=$id
+                $this->db->select("at.account_group AS id")->from('entries AS e')->where(array('e.id'=>$id))->join("account_types AS at", "at.id=e.account_type", "inner");
+                break;
+            case 'type':
+                // SELECT account_group AS id FROM account_types WHERE id=$id
+                $this->db->select("account_group AS id")->from('account_types')->where(array('id'=>$id));
+                break;
+            default:
+                // SELECT 0 AS id;
+                $this->db->select("0 AS id");
+        }
+
         $account = $this->db->get()->row_array();
         return intval($account['id']);
     }
