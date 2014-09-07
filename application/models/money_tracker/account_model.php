@@ -33,20 +33,38 @@ class Account_model extends CI_Model {
      */
     public function save_type($data) {
         if(empty($data['id']) || $data['id']==-1){
-            return $this->insert_type($data);
+            $this->insert_type($data);
         } else {
-            return $this->update_type($data);
+            $this->update_type($data);
         }
     }
 
-    private function insert_type($secret_data) {
-        // TODO - build
-        return null;
+    /**
+     * @param array $type_data
+     */
+    private function insert_type($type_data) {
+        $this->db->insert('account_types', array(
+            'type_name'=>$type_data['name'],
+            'type'=>$type_data['type'],
+            'last_digits'=>$type_data['last_digits'],
+            'account_group'=>$type_data['accountID']
+        ));
     }
 
-    private function update_type($secret_data) {
-        // TODO - build
-        return null;
+    /**
+     * @param array $type_data
+     */
+    private function update_type($type_data) {
+        $data = array();
+        foreach($type_data as $key=>$value){
+            if(!in_array($key, array('accountID', 'id'))){
+                $data[$key] = $value;
+            }
+        }
+        // UPDATE account_types SET $data
+        // WHERE account_group=$type_data['accountID']
+        // AND id=$type_data['id']
+        $this->db->where(array('account_group'=>$type_data['accountID'], 'id'=>$type_data['id']))->update('account_types', $data);
     }
 
     /**

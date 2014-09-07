@@ -171,7 +171,6 @@ class Money_Tracker extends REST_Controller{
     }
     
     public function add_account_post(){
-        // TODO - take in a user
         // TODO - take in a base64 encoding of a JSON string;
         // TODO -       containing: account name
         // TODO - pass info to account_model::create();
@@ -183,12 +182,17 @@ class Money_Tracker extends REST_Controller{
     }
     
     public function save_account_type_post(){
-        // Handles account type creation, updates and disables
-        // TODO - take in a user
-        // TODO - take in an account ID
-        // TODO - take in a base64 encoding of a JSON string;
-        // TODO -       containing: account type, account type name, last 4 digits associated, id (optional)
-        // TODO - pass info to account_model::save_type();
+        // Handles account type creation and updates
+        $this->validate_access();
+
+        $type_data = json_decode(base64_decode($this->post('data')), true);
+        if(empty($type_data)){
+            $this->send_response(0, __FUNCTION__);
+        }
+
+        $this->load->model($this->_model_dir.'account_model', 'Account', $this->_db_config);
+        $this->Account->save_type($type_data);
+        $this->send_response(1, __FUNCTION__);
     }
     
     private function validate_access(){
