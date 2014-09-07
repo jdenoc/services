@@ -46,7 +46,7 @@ class Money_Tracker extends REST_Controller{
             $this->load->model($this->_model_dir.'account_model', 'Account', $this->_db_config);
             $this->Attachment->delete($id);
             $entry_value = $this->Entry->delete($id);
-            $account_id = $this->Account->get_account_id_from_entry($id);
+            $account_id = $this->Account->get_account_id('entry', $id);
             $this->Account->update_balance(-1*$entry_value, $account_id);
         }
         $this->send_response(1, __FUNCTION__);
@@ -123,7 +123,7 @@ class Money_Tracker extends REST_Controller{
             $existing_entry_data = $this->Entry->get($entry_data['id']);
             if(!empty($existing_entry_data)){
                 $existing_entry_data['value'] *= ($existing_entry_data['expense'] ? -1 : 1);
-                $account_id = $this->Account->get_account_id_from_entry($existing_entry_data['id']);
+                $account_id = $this->Account->get_account_id('entry', $existing_entry_data['id']);
                 $this->Account->update_balance((-1*$existing_entry_data['value']), $account_id);
             }
         }
@@ -132,7 +132,9 @@ class Money_Tracker extends REST_Controller{
         $this->Attachment->save($entry_id, $entry_data['attachments']);
         $entry_data['value'] *= ($entry_data['expense'] ? -1 : 1);
         if(is_null($account_id)){
-            $account_id = $this->Account->get_account_id_from_entry($entry_id);
+            $account_id = $this->Account->get_account_id('entry', $entry_id);
+        } elseif(isset($existing_entry_data) && $entry_data['account_type']!=$existing_entry_data['account_type']){
+            $account_id = $this->Account->get_account_id('type', $entry_data['account_type']);
         }
         $this->Account->update_balance($entry_data['value'], $account_id);
         $this->send_response(1, __FUNCTION__);
