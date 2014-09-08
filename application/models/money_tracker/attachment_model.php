@@ -61,9 +61,8 @@ class Attachment_model extends CI_Model {
      * @return array
      */
     public function get_entry($entry_id){
-        // TODO - test
         // SELECT id, attachment AS filename FROM attachments WHERE entry_id=$entry_id
-        $this->db->select('id, attachment')->from($this->_tbl_name)->where('entry_id', $entry_id);
+        $this->db->select('id, attachment AS filename')->from($this->_tbl_name)->where('entry_id', $entry_id);
         return $this->db->get()->result_array();
     }
 
