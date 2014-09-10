@@ -197,6 +197,21 @@ class Money_Tracker extends REST_Controller{
         $this->send_response(1, __FUNCTION__);
     }
     
+    public function disable_account_type(){
+        // Handles account type disabling
+        $this->validate_access();
+
+        $type_data = json_decode(base64_decode($this->post('data')), true);
+        if(empty($type_data)){
+            $this->send_response(0, __FUNCTION__);
+        } else {
+            $type_data['disabled'] = 1;
+        }
+        $this->load->model($this->_model_dir.'account_model', 'Account', $this->_db_config);
+        $this->Account->save_type($type_data);
+        $this->send_response(1, __FUNCTION__);
+    }
+    
     private function validate_access(){
         $this->load->model($this->_model_dir.'api_key_model', 'API');
         $valid_key = $this->API->validate();
