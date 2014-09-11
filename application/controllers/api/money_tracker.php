@@ -197,7 +197,7 @@ class Money_Tracker extends REST_Controller{
         $this->send_response(1, __FUNCTION__);
     }
     
-    public function disable_account_type(){
+    public function disable_account_type_post(){
         // Handles account type disabling
         $this->validate_access();
 
