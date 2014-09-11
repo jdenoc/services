@@ -98,8 +98,9 @@ class Account_model extends CI_Model {
         // SELECT a.id, a.account As account_name, at.id AS type_id, at.type_name, at.type, at.last_digits
         // FROM `accounts` AS a
         // LEFT JOIN `account_types` AS at ON at.account_group = a.id
+        // WHERE at.disabled=0
         // ORDER BY a.account
-        $this->db->select("a.id, a.account As account_name, at.id AS type_id, at.type_name, at.type, at.last_digits")->from($this->_tbl_name." AS a")->join("account_types AS at", "a.id=at.account_group", "left")->order_by('account_name');
+        $this->db->select("a.id, a.account As account_name, at.id AS type_id, at.type_name, at.type, at.last_digits")->from($this->_tbl_name." AS a")->join("account_types AS at", "a.id=at.account_group", "left")->where(array('disabled'=>0))->order_by('account_name');
         return $this->db->get()->result_array();
     }
 
