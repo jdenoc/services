@@ -272,7 +272,7 @@ class Money_Tracker extends REST_Controller{
                 $tag_array[] = "entries.tags LIKE '[".$tag.",%'";
                 $tag_array[] = "entries.tags LIKE '%,".$tag.",%'";
                 $tag_array[] = "entries.tags LIKE '%,".$tag."]'";
-                $where_stmt[] = '('.implode(" OR ", $tag_array).')';
+                $where_stmt['where_or'][] = '('.implode(" OR ", $tag_array).')';
             }
         }
         return $where_stmt;

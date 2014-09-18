@@ -91,11 +91,19 @@ class Entry_model extends CI_Model {
      * @return array
      */
     public function list_entries($where_array, $start, $limit){
+        $where_or = $where_array['where_or'];
+        unset($where_array['where_or']);
+
         // SELECT entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits
         // FROM entries
         // INNER JOIN account_types ON account_types.id = entries.account_type $where
         // ORDER BY entries.`date` DESC, entries.id DESC LIMIT ($start*$limit), $limit
         $this->db->select("entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits")->from($this->_tbl_name)->join('account_types', "account_types.id=entries.account_type")->where($where_array)->order_by('entries.date', 'DESC')->limit($limit, $start*$limit);
+        if(!empty($where_or)){
+            foreach($where_or as $or_section) {
+                $this->db->where($or_section);
+            }
+        }
         return $this->db->get()->result_array();
     }
 
@@ -104,8 +112,16 @@ class Entry_model extends CI_Model {
      * @return int
      */
     public function count($where){
+        $where_or = $where['where_or'];
+        unset($where['where_or']);
+        
         // SELECT COUNT(*) FROM entries INNER JOIN account_types ON account_types.id = entries.account_type WHERE $where
         $this->db->from($this->_tbl_name)->join('account_types', 'account_types.id = entries.account_type', 'inner')->where($where);
+        if(!empty($where_or)){
+            foreach($where_or as $or_section) {
+                $this->db->where($or_section);
+            }
+        }
         return $this->db->count_all_results();
     }
 
