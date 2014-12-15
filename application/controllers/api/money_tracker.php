@@ -269,6 +269,8 @@ class Money_Tracker extends REST_Controller{
             $where_stmt["entries.account_type"] = $where_array["account_type"];
         if(isset($where_array['attachments']) && in_array($where_array['attachments'], array(0,1)))
             $where_stmt["entries.has_attachment"] = $where_array["attachments"];
+        if(isset($where_array['expense']) && in_array($where_array['expense'], array(0,1)))
+            $where_stmt['entries.expense'] = $where_array['expense'];
         if(!empty($where_array['confirm'])){
             $where_stmt["entries.confirm"] = 0;
             unset($where_array['confirm']);
