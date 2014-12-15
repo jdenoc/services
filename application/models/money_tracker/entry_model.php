@@ -6,8 +6,6 @@
 
 class Entry_model extends CI_Model {
 
-    private $_tbl_name = 'entries';
-
     public function __construct() {
         // Call the Model constructor
         parent::__construct();
@@ -19,10 +17,10 @@ class Entry_model extends CI_Model {
      */
     public function delete($id) {
         // UPDATE entries SET deleted=1 WHERE id=$id
-        $this->db->where(array('id'=>$id))->update($this->_tbl_name, array('deleted'=>1));
+        $this->db->where(array('id'=>$id))->update(Money_Tracker::TABLE_ENTRIES, array('deleted'=>1));
         $this->db->flush_cache();
         // SELECT `value`, expense FROM entries WHERE id=$id AND deleted=1
-        $this->db->select("`value`, expense")->from($this->_tbl_name)->where(array('deleted'=>1, 'id'=>$id));
+        $this->db->select("`value`, expense")->from(Money_Tracker::TABLE_ENTRIES)->where(array('deleted'=>1, 'id'=>$id));
         $entry_data = $this->db->get()->row_array();
         $entry_data['value'] *= ($entry_data['expense'] ? -1 : 1);
         unset($entry_data['expense']);
@@ -34,14 +32,6 @@ class Entry_model extends CI_Model {
      * @return int
      */
     public function save($data) {
-        $raw_tag_ids = $this->get_select_tags('tag', $data['tags']);
-        $tag_ids = array();
-        foreach($raw_tag_ids as $tid){
-            $tag_ids[] = $tid['id'];
-        }
-        $data['tags'] = (empty($tag_ids)) ? '' : json_encode($tag_ids);
-        unset($raw_tag_ids, $tag_ids);
-
         if(empty($data['id']) || $data['id']==-1){
             return $this->insert($data);
         } else {
@@ -54,11 +44,10 @@ class Entry_model extends CI_Model {
      * @return int
      */
     private function insert($entry_data) {
-        $this->db->insert($this->_tbl_name, array(
+        $this->db->insert(Money_Tracker::TABLE_ENTRIES, array(
             'date'=>$entry_data['date'],
             'account_type'=>$entry_data['account_type'],
             'value'=>$entry_data['value'],
-            'tags'=>$entry_data['tags'],
             'memo'=>$entry_data['memo'],
             'confirm'=>$entry_data['confirm'],
             'expense'=>$entry_data['expense']
@@ -73,13 +62,14 @@ class Entry_model extends CI_Model {
     private function update($entry_data) {
         $data = array();
         foreach($entry_data as $key=>$value){
-            if(!in_array($key, array('id', 'attachments', 'has_attachment'))){
+            if(!in_array($key, array('id', 'attachments', 'has_attachment', 'tags'))){
                 $data[$key] = $value;
             }
+            unset($key, $value);
         }
 
         if(!empty($data)){
-            $this->db->where(array('id'=>$entry_data['id']))->update($this->_tbl_name,$data);
+            $this->db->where(array('id'=>$entry_data['id']))->update(Money_Tracker::TABLE_ENTRIES,$data);
         }
         return $entry_data['id'];
     }
@@ -91,18 +81,29 @@ class Entry_model extends CI_Model {
      * @return array
      */
     public function list_entries($where_array, $start, $limit){
-        $where_or = $where_array['where_or'];
-        unset($where_array['where_or']);
-
-        // SELECT entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits
+        $where_tags = $where_array['tags'];
+        unset($where_array['tags']);
+        
+        // SELECT
+        //      entries.*,
+        //      account_types.type_name AS account_type_name,
+        //      account_types.last_digits AS account_last_digits,
+        //      CONCAT('[', GROUP_CONCAT(entry_tags.tag_id SEPARATOR ', '), ']') AS tags
         // FROM entries
-        // INNER JOIN account_types ON account_types.id = entries.account_type $where
-        // ORDER BY entries.`date` DESC, entries.id DESC LIMIT ($start*$limit), $limit
-        $this->db->select("entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits")->from($this->_tbl_name)->join('account_types', "account_types.id=entries.account_type")->where($where_array)->order_by('entries.date', 'DESC')->limit($limit, $start*$limit);
-        if(!empty($where_or)){
-            foreach($where_or as $or_section) {
-                $this->db->where($or_section);
-            }
+        // INNER JOIN account_types ON account_types.id = entries.account_type
+        // LEFT JOIN entry_tags ON entry_tags.entry_id=entries.id
+        // WHERE $where
+        // GROUP BY entries.id
+        // ORDER BY entries.`date` DESC, entries.id DESC
+        // LIMIT ($start*$limit), $limit;
+        $this->db->select("entries.*, account_types.type_name AS account_type_name, account_types.last_digits AS account_last_digits, CONCAT('[', GROUP_CONCAT(entry_tags.tag_id SEPARATOR ', '), ']') AS tags")
+            ->from(Money_Tracker::TABLE_ENTRIES)
+            ->join(Money_Tracker::TABLE_ACCOUNTS_TYPES, "account_types.id=entries.account_type", 'inner')
+            ->join(Money_Tracker::TABLE_ENTRY_TAGS, "entry_tags.entry_id=entries.id", 'left')
+            ->where($where_array)
+            ->group_by('entries.id')->order_by('entries.date DESC, entries.id DESC')->limit($limit, $start*$limit);
+        if(!empty($where_tags)){
+            $this->db->where_in("entry_tags.tag_id", $where_tags);
         }
         return $this->db->get()->result_array();
     }
@@ -112,39 +113,20 @@ class Entry_model extends CI_Model {
      * @return int
      */
     public function count($where){
-        $where_or = $where['where_or'];
-        unset($where['where_or']);
+        $where_tags = $where['tags'];
+        unset($where['tags']);
         
-        // SELECT COUNT(*) FROM entries INNER JOIN account_types ON account_types.id = entries.account_type WHERE $where
-        $this->db->from($this->_tbl_name)->join('account_types', 'account_types.id = entries.account_type', 'inner')->where($where);
-        if(!empty($where_or)){
-            foreach($where_or as $or_section) {
-                $this->db->where($or_section);
-            }
+        // SELECT COUNT(*) FROM entries
+        // INNER JOIN account_types ON account_types.id = entries.account_type
+        // LEFT JOIN entry_tags ON entry_tags.entry_id=entries.id
+        // WHERE $where
+        $this->db->from(Money_Tracker::TABLE_ENTRIES)
+            ->join(Money_Tracker::TABLE_ACCOUNTS_TYPES, Money_Tracker::TABLE_ACCOUNTS_TYPES.'.id = '.Money_Tracker::TABLE_ENTRIES.'.account_type', 'inner')
+            ->where($where);
+        if(!empty($where_tags)){
+            $this->db->where_in("entry_tags.tag_id", $where_tags);
         }
         return $this->db->count_all_results();
-    }
-
-    /**
-     * @return array
-     */
-    public function get_all_tags(){
-        // SELECT * FROM tags
-        return $this->db->from("tags")->get()->result_array();
-    }
-
-    /**
-     * @param string $col
-     * @param array $tag_values
-     * @return array
-     */
-    public function get_select_tags($col, $tag_values){
-        if(!empty($tag_values)){
-            // SELECT * FROM tags WHERE $col IN ($tag_values);
-            return $this->db->from('tags')->where_in($col, $tag_values)->get()->result_array();
-        } else {
-            return array();
-        }
     }
 
     /**
@@ -155,8 +137,23 @@ class Entry_model extends CI_Model {
         // SELECT e.*, at.type_name AS account_type_name, at.last_digits AS account_last_digits
         // FROM entries AS e
         // INNER JOIN account_types AS at ON at.id=e.account_type
+        // INNER JOIN entry_tags AS et ON et.entry_id=e.id
+        // INNER JOIN tags ON tags.id=et.tag_id
         // WHERE e.id=$id
-        $this->db->select("e.*, at.type_name AS account_type_name, at.last_digits AS account_last_digits")->from($this->_tbl_name." AS e")->join("account_types AS at", "at.id=e.account_type", 'inner')->where(array("e.id"=>$id));
+        $this->db->select("e.*, at.type_name AS account_type_name, at.last_digits AS account_last_digits")
+            ->from(Money_Tracker::TABLE_ENTRIES." AS e")
+            ->join(Money_Tracker::TABLE_ACCOUNTS_TYPES." AS at", "at.id=e.account_type", 'inner')
+            ->where(array("e.id"=>$id));
         return $this->db->get()->row_array();
+    }
+
+    /**
+     * @param $id
+     * @return int
+     */
+    public function has_tags($id){
+        // SELECT COUNT(*) FROM entry_tags WHERE entry_id=$id;
+        $this->db->from(Money_Tracker::TABLE_ENTRY_TAGS)->where(array("entry_id"=>$id));
+        return $this->db->count_all_results() > 0;
     }
 }

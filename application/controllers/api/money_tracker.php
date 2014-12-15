@@ -15,8 +15,16 @@
 
 // This can be removed if you use __autoload() in config.php OR use Modular Extensions
 require APPPATH.'/libraries/REST_Controller.php';
-error_reporting(!E_DEPRECATED);
 class Money_Tracker extends REST_Controller{
+    
+    // Table names
+    CONST TABLE_TAGS = "tags";
+    CONST TABLE_ACCOUNTS = "accounts";
+    CONST TABLE_ATTACHMENTS = "attachments";
+    CONST TABLE_ACCOUNTS_TYPES = "account_types";
+    CONST TABLE_ENTRIES = "entries";
+    CONST TABLE_ENTRY_TAGS = "entry_tags";
+    CONST TABLE_USERS = "users";
 
     private $_db_config;
     private $_db_config_file = '/../../config/money-tracker.db_config.php';
@@ -61,6 +69,7 @@ class Money_Tracker extends REST_Controller{
         if(empty($entry)){
             $this->send_response('Entry not found');
         }
+        
         if($entry['has_attachment']){
             $this->load->model($this->_model_dir.'attachment_model', 'Attachment', $this->_db_config);
             $attachments = $this->Attachment->get_entry($id);
@@ -71,9 +80,12 @@ class Money_Tracker extends REST_Controller{
                 $entry['attachments'] = $attachments;
             }
         }
+        
+        if($this->Entry->has_tags($id)){
+            $this->load->model($this->_model_dir.'tag_model', 'Tag', $this->_db_config);
+            $entry['tags'] = $this->Tag->get_entry_tags($id);
+        }
 
-        $tag_ids = json_decode($entry['tags'], true);
-        $entry['tags'] = $this->Entry->get_select_tags('id', $tag_ids);
         $this->send_response($entry, __FUNCTION__);
     }
 
@@ -117,6 +129,7 @@ class Money_Tracker extends REST_Controller{
         $this->load->model($this->_model_dir.'entry_model', 'Entry', $this->_db_config);
         $this->load->model($this->_model_dir.'attachment_model', 'Attachment', $this->_db_config);
         $this->load->model($this->_model_dir.'account_model', 'Account', $this->_db_config);
+        $this->load->model($this->_model_dir.'tag_model', 'Tag', $this->_db_config);
 
         $account_id = null;
         if(!empty($entry_data['id']) && $entry_data['id'] != -1){
@@ -129,6 +142,7 @@ class Money_Tracker extends REST_Controller{
         }
 
         $entry_id = $this->Entry->save($entry_data);
+        $this->Tag->save($entry_id, $entry_data['tags']);
         $this->Attachment->save($entry_id, $entry_data['attachments']);
         $entry_data['value'] *= ($entry_data['expense'] ? -1 : 1);
         if(is_null($account_id)){
@@ -143,8 +157,8 @@ class Money_Tracker extends REST_Controller{
     public function tags_get(){
         $this->validate_access();
 
-        $this->load->model($this->_model_dir.'entry_model', 'Entry', $this->_db_config);
-        $tags = $this->Entry->get_all_tags();
+        $this->load->model($this->_model_dir.'tag_model', 'Tag', $this->_db_config);
+        $tags = $this->Tag->get_all_tags();
         $this->send_response($tags, __FUNCTION__);
     }
 
@@ -266,14 +280,7 @@ class Money_Tracker extends REST_Controller{
         if(!empty($where_array['group']))
             $where_stmt["account_types.account_group"] = $where_array["group"];
         if(!empty($where_array['tags'])){
-            foreach($where_array['tags'] as $tag){
-                $tag_array = array();
-                $tag_array[] = "entries.tags LIKE '[".$tag."]'";
-                $tag_array[] = "entries.tags LIKE '[".$tag.",%'";
-                $tag_array[] = "entries.tags LIKE '%,".$tag.",%'";
-                $tag_array[] = "entries.tags LIKE '%,".$tag."]'";
-                $where_stmt['where_or'][] = '('.implode(" OR ", $tag_array).')';
-            }
+            $where_stmt["tags"] = $where_array['tags'];
         }
         return $where_stmt;
     }

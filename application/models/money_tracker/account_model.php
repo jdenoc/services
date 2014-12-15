@@ -6,8 +6,6 @@
 
 class Account_model extends CI_Model {
 
-    private $_tbl_name = 'accounts';
-
     public function __construct() {
         // Call the Model constructor
         parent::__construct();
@@ -75,10 +73,10 @@ class Account_model extends CI_Model {
         $this->db->query("LOCK TABLE accounts WRITE");
         $this->db->flush_cache();
         // SELECT total FROM accounts WHERE id=$account_id
-        $account = $this->db->select('total')->from($this->_tbl_name)->where(array('id'=>$account_id))->get()->row_array();
+        $account = $this->db->select('total')->from(Money_Tracker::TABLE_ACCOUNTS)->where(array('id'=>$account_id))->get()->row_array();
         $this->db->flush_cache();
         // UPDATE accounts SET total=($current_total+$update_value) WHERE id=$account_id
-        $this->db->where(array('id'=>$account_id))->update($this->_tbl_name, array('total'=>($account['total']+$update_value)));
+        $this->db->where(array('id'=>$account_id))->update(Money_Tracker::TABLE_ACCOUNTS, array('total'=>($account['total']+$update_value)));
         $this->db->flush_cache();
         $this->db->query("UNLOCK TABLES");
     }
@@ -88,7 +86,7 @@ class Account_model extends CI_Model {
      */
     public function list_accounts(){
         // SELECT * FROM accounts
-        return $this->db->from($this->_tbl_name)->get()->result_array();
+        return $this->db->from(Money_Tracker::TABLE_ACCOUNTS)->get()->result_array();
     }
 
     /**
@@ -100,7 +98,10 @@ class Account_model extends CI_Model {
         // LEFT JOIN `account_types` AS at ON at.account_group = a.id
         // WHERE at.disabled=0
         // ORDER BY a.account
-        $this->db->select("a.id, a.account As account_name, at.id AS type_id, at.type_name, at.type, at.last_digits")->from($this->_tbl_name." AS a")->join("account_types AS at", "a.id=at.account_group", "left")->where(array('disabled'=>0))->order_by('account_name');
+        $this->db->select("a.id, a.account As account_name, at.id AS type_id, at.type_name, at.type, at.last_digits")
+            ->from(Money_Tracker::TABLE_ACCOUNTS." AS a")
+            ->join(Money_Tracker::TABLE_ACCOUNTS_TYPES." AS at", "a.id=at.account_group", "left")
+            ->where(array('disabled'=>0))->order_by('account_name');
         return $this->db->get()->result_array();
     }
 
@@ -123,12 +124,16 @@ class Account_model extends CI_Model {
     public function get_account_id($from, $id){
         switch($from){
             case 'entry':
-                // SELECT at.account_group AS id FROM entries AS e INNER JOIN account_types AS at ON at.id=e.account_type WHERE e.id=$id
-                $this->db->select("at.account_group AS id")->from('entries AS e')->where(array('e.id'=>$id))->join("account_types AS at", "at.id=e.account_type", "inner");
+                // SELECT at.account_group AS id FROM entries AS e
+                // INNER JOIN account_types AS at ON at.id=e.account_type WHERE e.id=$id
+                $this->db->select("at.account_group AS id")
+                    ->from(Money_Tracker::TABLE_ENTRIES.' AS e')
+                    ->join(Money_Tracker::TABLE_ACCOUNTS_TYPES." AS at", "at.id=e.account_type", "inner")
+                    ->where(array('e.id'=>$id));
                 break;
             case 'type':
                 // SELECT account_group AS id FROM account_types WHERE id=$id
-                $this->db->select("account_group AS id")->from('account_types')->where(array('id'=>$id));
+                $this->db->select("account_group AS id")->from(Money_Tracker::TABLE_ACCOUNTS_TYPES)->where(array('id'=>$id));
                 break;
             default:
                 // SELECT 0 AS id;
