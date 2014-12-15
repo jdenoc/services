@@ -5,11 +5,11 @@
  */
 
 return array(
-    'hostname' => 'localhost',
+    'hostname' => 'mysql:host=localhost',
     'username' => '',           // TODO - need value
     'password' => '',           // TODO - need value
     'database' => '',           // TODO - need value
-    'dbdriver' => 'mysql',
+    'dbdriver' => 'pdo',
     'dbprefix' => '',
     'pconnect' => TRUE,
     'db_debug' => TRUE
