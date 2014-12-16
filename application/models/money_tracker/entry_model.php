@@ -81,8 +81,10 @@ class Entry_model extends CI_Model {
      * @return array
      */
     public function list_entries($where_array, $start, $limit){
-        $where_tags = $where_array['tags'];
-        unset($where_array['tags']);
+        if(isset($where_array['tags'])) {
+            $where_tags = $where_array['tags'];
+            unset($where_array['tags']);
+        }
         
         // SELECT
         //      entries.*,
@@ -113,8 +115,10 @@ class Entry_model extends CI_Model {
      * @return int
      */
     public function count($where){
-        $where_tags = $where['tags'];
-        unset($where['tags']);
+        if(isset($where_array['tags'])) {
+            $where_tags = $where_array['tags'];
+            unset($where_array['tags']);
+        }
         
         // SELECT COUNT(*) FROM entries
         // INNER JOIN account_types ON account_types.id = entries.account_type
