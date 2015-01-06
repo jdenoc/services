@@ -36,7 +36,7 @@ class Money_Tracker extends REST_Controller{
         if(!file_exists(__DIR__.$this->_db_config_file)){
             $this->send_response('DB config file not found');
         } else {
-            $this->_db_config = require_once(__DIR__.$this->_db_config_file);
+            $this->_db_config = require(__DIR__.$this->_db_config_file);
         }
     }
 
@@ -70,15 +70,19 @@ class Money_Tracker extends REST_Controller{
             $this->send_response('Entry not found');
         }
         
-        if($entry['has_attachment']){
+        if($this->Entry->has_attachments($id)){
             $this->load->model($this->_model_dir.'attachment_model', 'Attachment', $this->_db_config);
             $attachments = $this->Attachment->get_entry($id);
             if(empty($attachments)){
-                $entry['has_attachment']=0;
                 $entry['attachments'] = array();
+                $entry['has_attachment'] = 0;
             } else {
                 $entry['attachments'] = $attachments;
+                $entry['has_attachment'] = 1;
             }
+        } else {
+            $entry['attachments'] = array();
+            $entry['has_attachment'] = 0;
         }
         
         if($this->Entry->has_tags($id)){
@@ -268,7 +272,7 @@ class Money_Tracker extends REST_Controller{
         if(!empty($where_array['account_type']))
             $where_stmt["entries.account_type"] = $where_array["account_type"];
         if(isset($where_array['attachments']) && in_array($where_array['attachments'], array(0,1)))
-            $where_stmt["entries.has_attachment"] = $where_array["attachments"];
+            $where_stmt["has_attachment"] = $where_array["attachments"];
         if(isset($where_array['expense']) && in_array($where_array['expense'], array(0,1)))
             $where_stmt['entries.expense'] = $where_array['expense'];
         if(!empty($where_array['confirm'])){

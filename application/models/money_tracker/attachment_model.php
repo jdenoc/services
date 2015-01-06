@@ -23,11 +23,6 @@ class Attachment_model extends CI_Model {
         }
         // DELETE FROM attachments WHERE entry_id=$entry_id AND id=$id
         $this->db->where($where_array)->delete(Money_Tracker::TABLE_ATTACHMENTS);
-        if($this->count($entry_id) < 1){
-            $this->db->flush_cache();
-            // UPDATE entries SET has_attachment=0 WHERE entry_id=$entry_id
-            $this->db->where(array('id'=>$entry_id))->update(Money_Tracker::TABLE_ENTRIES, array('has_attachment'=>0));
-        }
     }
 
     /**
@@ -47,10 +42,7 @@ class Attachment_model extends CI_Model {
             );
         }
         if(!empty($new_attachments)){
-            $has_attachment = 1;
             $this->db->insert_batch(Money_Tracker::TABLE_ATTACHMENTS, $new_attachments);
-            $this->db->flush_cache();
-            $this->db->where(array('id'=>$entry_id))->update(Money_Tracker::TABLE_ENTRIES, array('has_attachment'=>$has_attachment));
         }
     }
 
