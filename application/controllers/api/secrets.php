@@ -18,6 +18,9 @@ require APPPATH.'/libraries/REST_Controller.php';
 
 class Secrets extends REST_Controller{
 
+    // Table names
+    CONST TABLE_SECRETS = "secrets";
+
     private $_db_config;
     private $_db_config_file = '/../../config/secrets.db_config.php';
     private $_origin;
@@ -28,7 +31,7 @@ class Secrets extends REST_Controller{
         if(!file_exists(__DIR__.$this->_db_config_file)){
             $this->send_response('DB config file not found');
         } else {
-            $this->_db_config = require_once(__DIR__.$this->_db_config_file);
+            $this->_db_config = require(__DIR__.$this->_db_config_file);
         }
     }
 
