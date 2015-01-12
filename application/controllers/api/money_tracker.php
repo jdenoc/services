@@ -1,18 +1,5 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 
-/**
- * Secrets
- *
- * This is an example of a few basic user interaction methods you could use
- * all done with a hardcoded array.
- *
- * @package		CodeIgniter
- * @subpackage	Rest Server
- * @category	Controller
- * @author		Phil Sturgeon
- * @link		http://philsturgeon.co.uk/code/
- */
-
 // This can be removed if you use __autoload() in config.php OR use Modular Extensions
 require APPPATH.'/libraries/REST_Controller.php';
 class Money_Tracker extends REST_Controller{
@@ -34,7 +21,9 @@ class Money_Tracker extends REST_Controller{
     public function __construct(){
         parent::__construct();
         if(!file_exists(__DIR__.$this->_db_config_file)){
-            $this->send_response('DB config file not found');
+            $error = 'DB config file not found';
+            error_log($error);
+            $this->send_response($error);
         } else {
             $this->_db_config = require(__DIR__.$this->_db_config_file);
         }
