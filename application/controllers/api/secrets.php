@@ -1,18 +1,5 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 
-/**
- * Secrets
- *
- * This is an example of a few basic user interaction methods you could use
- * all done with a hardcoded array.
- *
- * @package		CodeIgniter
- * @subpackage	Rest Server
- * @category	Controller
- * @author		Phil Sturgeon
- * @link		http://philsturgeon.co.uk/code/
- */
-
 // This can be removed if you use __autoload() in config.php OR use Modular Extensions
 require APPPATH.'/libraries/REST_Controller.php';
 
@@ -20,6 +7,7 @@ class Secrets extends REST_Controller{
 
     // Table names
     CONST TABLE_SECRETS = "secrets";
+    CONST TABLE_USERS = "users";
 
     private $_db_config;
     private $_db_config_file = '/../../config/secrets.db_config.php';
@@ -29,7 +17,9 @@ class Secrets extends REST_Controller{
     public function __construct(){
         parent::__construct();
         if(!file_exists(__DIR__.$this->_db_config_file)){
-            $this->send_response('DB config file not found');
+            $error = 'DB config file not found';
+            error_log($error);
+            $this->send_response($error);
         } else {
             $this->_db_config = require(__DIR__.$this->_db_config_file);
         }
@@ -96,8 +86,8 @@ class Secrets extends REST_Controller{
             $this->send_response(0, __FUNCTION__);
         }
         $this->load->model($this->_model_dir.'secrets_model', 'Secrets', $this->_db_config);
-        $this->Secrets->save($user_id, $secret_data);
-        $this->send_response(1, __FUNCTION__);
+        $secret_id = $this->Secrets->save($user_id, $secret_data);
+        $this->send_response($secret_id, __FUNCTION__);
     }
 
     public function user_key_get(){
