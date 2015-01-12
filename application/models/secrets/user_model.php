@@ -28,7 +28,7 @@ class User_model extends CI_Model implements user_interface{
 
     public function get($user_id){
         // SELECT * FROM users WHERE id=$$user_id
-        return $this->db->from('users')->where('id', $user_id)->get()->result_array();
+        return $this->db->from(Secrets::TABLE_USERS)->where('id', $user_id)->get()->result_array();
     }
 
     private function insert(){
