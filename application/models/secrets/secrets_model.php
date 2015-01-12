@@ -6,9 +6,12 @@
 
 class Secrets_model extends CI_Model {
 
+    private $_table_columns = array();
+    
     public function __construct() {
         // Call the Model constructor
         parent::__construct();
+        $this->_table_columns = array("id","name","url","username","encrypted_password","password_length","notes","user_id","create_stamp","modified_stamp");
     }
 
     public function delete($user_id, $id) {
@@ -17,9 +20,9 @@ class Secrets_model extends CI_Model {
 
     public function save($user_id, $data) {
         if(empty($data['id'])){
-            $this->insert($user_id, $data);
+            return $this->insert($user_id, $data);
         } else {
-            $this->update($user_id, $data);
+            return $this->update($user_id, $data);
         }
     }
 
@@ -34,18 +37,22 @@ class Secrets_model extends CI_Model {
             'notes'=>$secret_data['notes'],
             'create_stamp'=>'NOW()'
         ));
+        return $this->db->insert_id();
     }
 
     private function update($user_id, $secret_data) {
         $data = array();
         foreach($secret_data as $key=>$value){
-            if($key!='id'){
+            if($key != 'id' && in_array($key, $this->_table_columns)){
                 $data[$key] = $value;
             }
         }
 
         if(!empty($data)){
             $this->db->where(array('id'=>$secret_data['id'], 'user_id'=>$user_id))->update(Secrets::TABLE_SECRETS,$data);
+            return $secret_data['id'];
+        } else {
+            return 0;
         }
     }
 
