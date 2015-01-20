@@ -35,7 +35,7 @@ class Secrets extends REST_Controller{
         $this->send_response(1, __FUNCTION__);
     }
 
-    public function display_get() {
+    public function secret_get() {
         $user_id = $this->get('user');
         $this->validate_access($user_id);
 
