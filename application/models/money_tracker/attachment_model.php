@@ -47,7 +47,7 @@ class Attachment_model extends CI_Model {
      * @param int $entry_id
      * @return array
      */
-    public function get_entry($entry_id){
+    public function get_from_entry_id($entry_id){
         // SELECT id, attachment AS filename FROM attachments WHERE entry_id=$entry_id
         $this->db->select('uuid, attachment AS filename')->from(Money_Tracker::TABLE_ATTACHMENTS)->where('entry_id', $entry_id);
         return $this->db->get()->result_array();

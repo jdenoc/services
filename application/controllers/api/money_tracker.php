@@ -61,7 +61,7 @@ class Money_Tracker extends REST_Controller{
         
         if($this->Entry->has_attachments($id)){
             $this->load->model($this->_model_dir.'attachment_model', 'Attachment', $this->_db_config);
-            $attachments = $this->Attachment->get_entry($id);
+            $attachments = $this->Attachment->get_from_entry_id($id);
             if(empty($attachments)){
                 $entry['attachments'] = array();
                 $entry['has_attachment'] = 0;
