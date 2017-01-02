@@ -137,13 +137,13 @@ class Money_Tracker extends REST_Controller{
         $entry_id = $this->Entry->save($entry_data);
         $this->Tag->save($entry_id, $entry_data['tags']);
         $this->Attachment->save($entry_id, $entry_data['attachments']);
-        $entry_data['value'] *= ($entry_data['expense'] ? -1 : 1);
+        $entry_data['entry_value'] *= ($entry_data['expense'] ? -1 : 1);
         if(is_null($account_id)){
             $account_id = $this->Account->get_account_id('entry', $entry_id);
         } elseif(isset($existing_entry_data) && $entry_data['account_type']!=$existing_entry_data['account_type']){
             $account_id = $this->Account->get_account_id('type', $entry_data['account_type']);
         }
-        $this->Account->update_balance($entry_data['value'], $account_id);
+        $this->Account->update_balance($entry_data['entry_value'], $account_id);
         $this->send_response(1, __FUNCTION__);
     }
 
