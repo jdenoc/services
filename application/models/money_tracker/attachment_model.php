@@ -30,15 +30,12 @@ class Attachment_model extends CI_Model {
      * @param array $attachments
      */
     public function save($entry_id, $attachments) {
-        // TODO - rebuild
         $new_attachments = array();
         foreach($attachments as $attachment){
-            $pos = strrpos($attachment, '.');
-            $ext = substr($attachment, $pos);
             $new_attachments[] = array(
+                'uuid'=>$attachment['uuid'],
                 'entry_id'=>$entry_id,
-                'attachment'=>$attachment,
-                'ext'=>$ext
+                'attachment'=>$attachment['filename'],
             );
         }
         if(!empty($new_attachments)){
@@ -50,9 +47,9 @@ class Attachment_model extends CI_Model {
      * @param int $entry_id
      * @return array
      */
-    public function get_entry($entry_id){
+    public function get_from_entry_id($entry_id){
         // SELECT id, attachment AS filename FROM attachments WHERE entry_id=$entry_id
-        $this->db->select('id, attachment AS filename')->from(Money_Tracker::TABLE_ATTACHMENTS)->where('entry_id', $entry_id);
+        $this->db->select('uuid, attachment AS filename')->from(Money_Tracker::TABLE_ATTACHMENTS)->where('entry_id', $entry_id);
         return $this->db->get()->result_array();
     }
 
