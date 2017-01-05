@@ -11,7 +11,7 @@ class Entry_model extends CI_Model {
     public function __construct() {
         // Call the Model constructor
         parent::__construct();
-        $this->_table_columns = array("id", "date", "account_type", "value", "memo", "expense", "confirm", "deleted", "stamp");
+        $this->_table_columns = array("id", "entry_date", "account_type", "entry_value", "memo", "expense", "confirm", "deleted", "create_stamp", "modified_stamp");
     }
 
     /**
@@ -23,11 +23,11 @@ class Entry_model extends CI_Model {
         $this->db->where(array('id'=>$id))->update(Money_Tracker::TABLE_ENTRIES, array('deleted'=>1));
         $this->db->flush_cache();
         // SELECT `value`, expense FROM entries WHERE id=$id AND deleted=1
-        $this->db->select("`value`, expense")->from(Money_Tracker::TABLE_ENTRIES)->where(array('deleted'=>1, 'id'=>$id));
+        $this->db->select("entry_value, expense")->from(Money_Tracker::TABLE_ENTRIES)->where(array('deleted'=>1, 'id'=>$id));
         $entry_data = $this->db->get()->row_array();
-        $entry_data['value'] *= ($entry_data['expense'] ? -1 : 1);
+        $entry_data['entry_value'] *= ($entry_data['expense'] ? -1 : 1);
         unset($entry_data['expense']);
-        return $entry_data['value'];
+        return $entry_data['entry_value'];
     }
 
     /**
@@ -48,9 +48,9 @@ class Entry_model extends CI_Model {
      */
     private function insert($entry_data) {
         $this->db->insert(Money_Tracker::TABLE_ENTRIES, array(
-            'date'=>$entry_data['date'],
+            'entry_date'=>$entry_data['entry_date'],
             'account_type'=>$entry_data['account_type'],
-            'value'=>$entry_data['value'],
+            'entry_value'=>$entry_data['entry_value'],
             'memo'=>$entry_data['memo'],
             'confirm'=>$entry_data['confirm'],
             'expense'=>$entry_data['expense']
@@ -104,7 +104,7 @@ class Entry_model extends CI_Model {
                 CONCAT('[', GROUP_CONCAT(entry_tags.tag_id SEPARATOR ', '), ']') AS tags"
             )
             ->group_by(Money_Tracker::TABLE_ENTRIES.'.id')
-            ->order_by(Money_Tracker::TABLE_ENTRIES.'.date DESC, '.Money_Tracker::TABLE_ENTRIES.'.id DESC')
+            ->order_by(Money_Tracker::TABLE_ENTRIES.'.entry_date DESC, '.Money_Tracker::TABLE_ENTRIES.'.id DESC')
             ->limit($limit, $start*$limit);
         return $this->db->get()->result_array();
     }
