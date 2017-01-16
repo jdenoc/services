@@ -255,9 +255,9 @@ class Money_Tracker extends REST_Controller{
     private function process_where_array($where_array){
         $where_stmt = array('entries.deleted'=>0);
         if(!empty($where_array['start_date']))
-            $where_stmt["entries.`date` >="] = $where_array['start_date'];
+            $where_stmt["entries.entry_date >="] = $where_array['start_date'];
         if(!empty($where_array['end_date']))
-            $where_stmt["entries.`date` <="] = $where_array["end_date"];
+            $where_stmt["entries.entry_date <="] = $where_array["end_date"];
         if(!empty($where_array['account_type']))
             $where_stmt["entries.account_type"] = $where_array["account_type"];
         if(isset($where_array['attachments']) && in_array($where_array['attachments'], array(0,1)))
