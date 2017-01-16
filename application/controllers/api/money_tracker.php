@@ -128,9 +128,9 @@ class Money_Tracker extends REST_Controller{
         if(!empty($entry_data['id']) && $entry_data['id'] != -1){
             $existing_entry_data = $this->Entry->get($entry_data['id']);
             if(!empty($existing_entry_data)){
-                $existing_entry_data['value'] *= ($existing_entry_data['expense'] ? -1 : 1);
+                $existing_entry_data['entry_value'] *= ($existing_entry_data['expense'] ? -1 : 1);
                 $account_id = $this->Account->get_account_id('entry', $existing_entry_data['id']);
-                $this->Account->update_balance((-1*$existing_entry_data['value']), $account_id);
+                $this->Account->update_balance((-1*$existing_entry_data['entry_value']), $account_id);
             }
         }
 
