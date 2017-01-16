@@ -94,7 +94,7 @@ class Entry_model extends CI_Model {
         //      CONCAT('[', GROUP_CONCAT(entry_tags.tag_id SEPARATOR ', '), ']') AS tags
         // ########################
         // GROUP BY entries.id
-        // ORDER BY entries.`date` DESC, entries.id DESC
+        // ORDER BY entries.entry_date DESC, entries.id DESC
         // LIMIT ($start*$limit), $limit;
         $this->db->select(
                 "entries.*,
