@@ -128,9 +128,9 @@ class Money_Tracker extends REST_Controller{
         if(!empty($entry_data['id']) && $entry_data['id'] != -1){
             $existing_entry_data = $this->Entry->get($entry_data['id']);
             if(!empty($existing_entry_data)){
-                $existing_entry_data['value'] *= ($existing_entry_data['expense'] ? -1 : 1);
+                $existing_entry_data['entry_value'] *= ($existing_entry_data['expense'] ? -1 : 1);
                 $account_id = $this->Account->get_account_id('entry', $existing_entry_data['id']);
-                $this->Account->update_balance((-1*$existing_entry_data['value']), $account_id);
+                $this->Account->update_balance((-1*$existing_entry_data['entry_value']), $account_id);
             }
         }
 
@@ -255,9 +255,9 @@ class Money_Tracker extends REST_Controller{
     private function process_where_array($where_array){
         $where_stmt = array('entries.deleted'=>0);
         if(!empty($where_array['start_date']))
-            $where_stmt["entries.`date` >="] = $where_array['start_date'];
+            $where_stmt["entries.entry_date >="] = $where_array['start_date'];
         if(!empty($where_array['end_date']))
-            $where_stmt["entries.`date` <="] = $where_array["end_date"];
+            $where_stmt["entries.entry_date <="] = $where_array["end_date"];
         if(!empty($where_array['account_type']))
             $where_stmt["entries.account_type"] = $where_array["account_type"];
         if(isset($where_array['attachments']) && in_array($where_array['attachments'], array(0,1)))
