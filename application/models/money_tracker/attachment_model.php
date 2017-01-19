@@ -6,11 +6,6 @@
 
 class Attachment_model extends CI_Model {
 
-    public function __construct() {
-        // Call the Model constructor
-        parent::__construct();
-    }
-
     /**
      * @param int $entry_id
      * @param int|bool $id
@@ -19,7 +14,7 @@ class Attachment_model extends CI_Model {
         // TODO - test
         $where_array = array('entry_id'=>$entry_id);
         if($id){
-            $where_array['id'] = $id;
+            $where_array['uuid'] = $id;
         }
         // DELETE FROM attachments WHERE entry_id=$entry_id AND id=$id
         $this->db->where($where_array)->delete(Money_Tracker::TABLE_ATTACHMENTS);
