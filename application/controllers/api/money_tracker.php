@@ -269,9 +269,9 @@ class Money_Tracker extends REST_Controller{
             unset($where_array['confirm']);
         }
         if(!empty($where_array['min_value']))
-            $where_stmt["entries.value >="] = $where_array["min_value"];
+            $where_stmt["entries.entry_value >="] = $where_array["min_value"];
         if(!empty($where_array['max_value']))
-            $where_stmt["entries.value <="] = $where_array["max_value"];
+            $where_stmt["entries.entry_value <="] = $where_array["max_value"];
         if(!empty($where_array['group']))
             $where_stmt["account_types.account_group"] = $where_array["group"];
         if(!empty($where_array['tags'])){
